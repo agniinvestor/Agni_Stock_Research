@@ -1,0 +1,46 @@
+ITC LIMITED — CHART INDEX
+Initiating Coverage | March 12, 2026
+============================================================
+
+4 MANDATORY CHARTS:
+  chart_03: ✓ PRESENT
+  chart_04: ✓ PRESENT
+  chart_28: ✓ PRESENT
+  chart_32: ✓ PRESENT
+
+ALL CHARTS (35 total):
+  chart_01_stock_price_performance.png
+  chart_02_revenue_growth_trajectory.png
+  chart_03_revenue_by_segment_stacked_area.png
+  chart_04_revenue_by_geography_stacked_bar.png
+  chart_05_company_overview_snapshot.png
+  chart_06_key_milestones_timeline.png
+  chart_07_organisational_structure.png
+  chart_08_product_portfolio_fmcg_others.png
+  chart_09_customer_channel_segmentation.png
+  chart_10_margin_progression.png
+  chart_11_segment_ebit_margins.png
+  chart_12_free_cash_flow_trend.png
+  chart_13_operating_metrics_dashboard.png
+  chart_14_scenario_comparison_bull_base_bear.png
+  chart_15_market_size_tam_evolution.png
+  chart_16_competitive_positioning_matrix.png
+  chart_17_cigarette_market_share.png
+  chart_18_peer_valuation_benchmarking.png
+  chart_19_dividend_history_payout.png
+  chart_20_fmcg_others_profitability_journey.png
+  chart_21_segment_ebit_waterfall_fy25.png
+  chart_22_balance_sheet_composition.png
+  chart_23_capex_vs_net_cash_buildup.png
+  chart_24_shareholding_pattern.png
+  chart_25_working_capital_efficiency.png
+  chart_26_roce_roe_vs_wacc.png
+  chart_27_ownership_structure_breakdown.png
+  chart_28_dcf_sensitivity_heatmap.png
+  chart_29_dcf_enterprise_equity_bridge.png
+  chart_30_comps_scatter_margin_vs_multiple.png
+  chart_31_peer_multiples_ev_ebitda_pe.png
+  chart_32_valuation_football_field.png
+  chart_33_price_target_scenarios.png
+  chart_34_historical_valuation_multiples.png
+  chart_35_cigarette_volumes_vs_ebit.png

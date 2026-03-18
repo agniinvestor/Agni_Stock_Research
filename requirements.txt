@@ -21,3 +21,7 @@ python-docx>=1.1.0
 
 # AI narrative (optional, for Task 1 / narrative generation)
 anthropic>=0.28.0
+
+# Phase 2 additions
+anthropic>=0.28.0
+PyMuPDF>=1.24.0

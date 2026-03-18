@@ -69,3 +69,14 @@ INDIA_FY_END_MONTH = 3   # March
 
 # ── Stock universe ─────────────────────────────────────────────────────────────
 STOCK_UNIVERSE_CSV = os.path.join(ROOT, "config", "stock_universe.csv")
+
+# ── AI Narrative (Phase 2) ────────────────────────────────────────────────────
+ANTHROPIC_API_KEY        = os.environ.get("ANTHROPIC_API_KEY", "")
+NARRATIVE_CACHE_TTL_DAYS = 30
+NARRATIVE_MODEL          = "claude-sonnet-4-6"
+NARRATIVE_MAX_TOKENS     = 2048
+
+# ── BSE Filing Access (Phase 2) ───────────────────────────────────────────────
+BSE_API_BASE_URL    = "https://www.bseindia.com"
+BSE_FILING_BASE_URL = "https://www.bseindia.com/xml-data/corpfiling/AttachLive"
+PDF_CACHE_DIR       = os.path.join(DATA_DIR, "pdfs")

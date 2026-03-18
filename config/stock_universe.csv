@@ -1,11 +1,24 @@
-ticker,exchange,sector,sector_model,screener_ticker,yf_ticker,company_name,notes
-ITC,NSE,FMCG,fmcg,ITC,ITC.NS,ITC Limited,Diversified FMCG + Cigarettes
-HINDUNILVR,NSE,FMCG,fmcg,HINDUNILVR,HINDUNILVR.NS,Hindustan Unilever Limited,
-NESTLEIND,NSE,FMCG,fmcg,NESTLEIND,NESTLEIND.NS,Nestle India Limited,
-BRITANNIA,NSE,FMCG,fmcg,BRITANNIA,BRITANNIA.NS,Britannia Industries Limited,
-DABUR,NSE,FMCG,fmcg,DABUR,DABUR.NS,Dabur India Limited,
-MARICO,NSE,FMCG,fmcg,MARICO,MARICO.NS,Marico Limited,
-GODREJCP,NSE,FMCG,fmcg,GODREJCP,GODREJCP.NS,Godrej Consumer Products Limited,
-TATACONSUM,NSE,FMCG,fmcg,TATACONSUM,TATACONSUM.NS,Tata Consumer Products Limited,
-COLPAL,NSE,FMCG,fmcg,COLPAL,COLPAL.NS,Colgate-Palmolive (India) Limited,
-EMAMILTD,NSE,FMCG,fmcg,EMAMILTD,EMAMILTD.NS,Emami Limited,
+ticker,bse_code,exchange,sector,sector_model,screener_ticker,yf_ticker,company_name,notes
+ITC,500875,NSE,FMCG,fmcg,ITC,ITC.NS,ITC Limited,Diversified FMCG + Cigarettes
+HINDUNILVR,500696,NSE,FMCG,fmcg,HINDUNILVR,HINDUNILVR.NS,Hindustan Unilever Limited,
+NESTLEIND,500790,NSE,FMCG,fmcg,NESTLEIND,NESTLEIND.NS,Nestle India Limited,FY ends Dec
+BRITANNIA,500825,NSE,FMCG,fmcg,BRITANNIA,BRITANNIA.NS,Britannia Industries Limited,
+DABUR,500096,NSE,FMCG,fmcg,DABUR,DABUR.NS,Dabur India Limited,
+MARICO,531642,NSE,FMCG,fmcg,MARICO,MARICO.NS,Marico Limited,
+GODREJCP,532424,NSE,FMCG,fmcg,GODREJCP,GODREJCP.NS,Godrej Consumer Products Limited,
+TATACONSUM,500800,NSE,FMCG,fmcg,TATACONSUM,TATACONSUM.NS,Tata Consumer Products Limited,
+COLPAL,500830,NSE,FMCG,fmcg,COLPAL,COLPAL.NS,Colgate-Palmolive (India) Limited,
+EMAMILTD,531162,NSE,FMCG,fmcg,EMAMILTD,EMAMILTD.NS,Emami Limited,
+HDFCBANK,500180,NSE,BANKING,bank,HDFCBANK,HDFCBANK.NS,HDFC Bank Limited,
+ICICIBANK,532174,NSE,BANKING,bank,ICICIBANK,ICICIBANK.NS,ICICI Bank Limited,
+KOTAKBANK,500247,NSE,BANKING,bank,KOTAKBANK,KOTAKBANK.NS,Kotak Mahindra Bank Limited,
+AXISBANK,532215,NSE,BANKING,bank,AXISBANK,AXISBANK.NS,Axis Bank Limited,
+SBIN,500112,NSE,BANKING,bank,SBIN,SBIN.NS,State Bank of India,PSU Bank
+INDUSINDBK,532187,NSE,BANKING,bank,INDUSINDBK,INDUSINDBK.NS,IndusInd Bank Limited,
+BAJFINANCE,500034,NSE,BANKING,bank,BAJFINANCE,BAJFINANCE.NS,Bajaj Finance Limited,NBFC
+TCS,532540,NSE,IT,it,TCS,TCS.NS,Tata Consultancy Services Limited,
+INFY,500209,NSE,IT,it,INFY,INFY.NS,Infosys Limited,
+WIPRO,507685,NSE,IT,it,WIPRO,WIPRO.NS,Wipro Limited,
+HCLTECH,532281,NSE,IT,it,HCLTECH,HCLTECH.NS,HCL Technologies Limited,
+TECHM,532755,NSE,IT,it,TECHM,TECHM.NS,Tech Mahindra Limited,
+LTIM,540005,NSE,IT,it,LTIM,LTIM.NS,LTIMindtree Limited,

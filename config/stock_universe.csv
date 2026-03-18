@@ -1,0 +1,11 @@
+ticker,exchange,sector,sector_model,screener_ticker,yf_ticker,company_name,notes
+ITC,NSE,FMCG,fmcg,ITC,ITC.NS,ITC Limited,Diversified FMCG + Cigarettes
+HINDUNILVR,NSE,FMCG,fmcg,HINDUNILVR,HINDUNILVR.NS,Hindustan Unilever Limited,
+NESTLEIND,NSE,FMCG,fmcg,NESTLEIND,NESTLEIND.NS,Nestle India Limited,
+BRITANNIA,NSE,FMCG,fmcg,BRITANNIA,BRITANNIA.NS,Britannia Industries Limited,
+DABUR,NSE,FMCG,fmcg,DABUR,DABUR.NS,Dabur India Limited,
+MARICO,NSE,FMCG,fmcg,MARICO,MARICO.NS,Marico Limited,
+GODREJCP,NSE,FMCG,fmcg,GODREJCP,GODREJCP.NS,Godrej Consumer Products Limited,
+TATACONSUM,NSE,FMCG,fmcg,TATACONSUM,TATACONSUM.NS,Tata Consumer Products Limited,
+COLPAL,NSE,FMCG,fmcg,COLPAL,COLPAL.NS,Colgate-Palmolive (India) Limited,
+EMAMILTD,NSE,FMCG,fmcg,EMAMILTD,EMAMILTD.NS,Emami Limited,

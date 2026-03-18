@@ -123,6 +123,22 @@ def run_data(ticker: str, sector_override: str = None,
         ratios  = model._ratios
         val_inputs = model.prepare_valuation_inputs()
 
+    elif model_type == "pharma":
+        from src.models.pharma_model import PharmaModel
+        model      = PharmaModel(company_data, market_data)
+        metrics    = model.compute_pharma_metrics()
+        nf         = model._nf
+        ratios     = model._ratios
+        val_inputs = model.prepare_valuation_inputs()
+
+    elif model_type == "metals":
+        from src.models.metals_model import MetalsModel
+        model      = MetalsModel(company_data, market_data)
+        metrics    = model.compute_metals_metrics()
+        nf         = model._nf
+        ratios     = model._ratios
+        val_inputs = model.prepare_valuation_inputs()
+
     else:
         # Generic fallback — use BaseModel only
         from src.models.base_model import BaseModel
@@ -183,6 +199,28 @@ def run_data(ticker: str, sector_override: str = None,
             "geo_mix":           getattr(metrics, "geo_mix", {}),
         }
 
+    pharma_metrics_dict = {}
+    if model_type == "pharma" and metrics:
+        pharma_metrics_dict = {
+            "rnd_spend":            getattr(metrics, "rnd_spend", []),
+            "rnd_spend_pct":        getattr(metrics, "rnd_spend_pct", []),
+            "ebitda_ex_rnd":        getattr(metrics, "ebitda_ex_rnd", []),
+            "ebitda_ex_rnd_margin": getattr(metrics, "ebitda_ex_rnd_margin", []),
+            "domestic_revenue_pct": getattr(metrics, "domestic_revenue_pct", None),
+            "us_revenue_pct":       getattr(metrics, "us_revenue_pct", None),
+        }
+
+    metals_metrics_dict = {}
+    if model_type == "metals" and metrics:
+        metals_metrics_dict = {
+            "steel_volume_mt":       getattr(metrics, "steel_volume_mt", []),
+            "aluminium_volume_mt":   getattr(metrics, "aluminium_volume_mt", []),
+            "realization_per_tonne": getattr(metrics, "realization_per_tonne", []),
+            "ebitda_per_tonne":      getattr(metrics, "ebitda_per_tonne", []),
+            "raw_material_cost_pct": getattr(metrics, "raw_material_cost_pct", []),
+            "net_debt_to_ebitda":    getattr(metrics, "net_debt_to_ebitda", []),
+        }
+
     # Projections
     proj_fy_labels = []
     if val_inputs:
@@ -227,6 +265,8 @@ def run_data(ticker: str, sector_override: str = None,
                 "dps":            _list("dps"),
                 **bank_metrics_dict,
                 **it_metrics_dict,
+                **pharma_metrics_dict,
+                **metals_metrics_dict,
             },
             "balance_sheet": {
                 "total_assets":   _list("total_assets"),
@@ -495,6 +535,47 @@ def run_report(report_json: dict, output_path: str) -> str:
     return builder.build(report_json)
 
 
+# ── Validate task ─────────────────────────────────────────────────────────────
+
+def run_validate(report_json: dict):
+    """Run data quality checks on report_json. Logs all results."""
+    from src.validation.model_validator import ModelValidator
+    from src.validation.screener_validator import ScreenerValidator
+    from src.data.price_client import PriceClient
+    price_client = PriceClient(db_path=SQLITE_DB_PATH)
+    report = ModelValidator.validate(report_json)
+    report = ScreenerValidator.validate(report_json, price_client, existing_report=report)
+    return report
+
+
+# ── Earnings report task ───────────────────────────────────────────────────────
+
+def run_earnings_report(report_json: dict, output_path: str,
+                        quarterly_data: dict = None) -> str:
+    """Generate an earnings update DOCX from report_json + quarterly actuals."""
+    from src.report.earnings_builder import EarningsBuilder
+    if quarterly_data:
+        report_json = dict(report_json)
+        report_json["quarterly"] = quarterly_data
+    builder = EarningsBuilder(output_path=output_path)
+    return builder.build(report_json)
+
+
+# ── Backtest task ──────────────────────────────────────────────────────────────
+
+def run_backtest(ticker: str = None, print_scorecard: bool = True):
+    """Update price target outcomes and print accuracy scorecard."""
+    from src.backtest.price_target_tracker import PriceTargetTracker
+    from src.data.price_client import PriceClient
+    price_client = PriceClient(db_path=SQLITE_DB_PATH)
+    tracker = PriceTargetTracker(db_path=SQLITE_DB_PATH)
+    updated = tracker.update_outcomes(ticker=ticker, price_client=price_client)
+    log.info(f"[backtest] Updated {updated} outcomes")
+    if print_scorecard:
+        tracker.print_scorecard(ticker=ticker)
+    return tracker
+
+
 # ── Utilities ──────────────────────────────────────────────────────────────────
 
 def save_report_json(report_json: dict, output_dir: str) -> str:
@@ -525,7 +606,11 @@ def main():
     parser.add_argument("--sector",  default=None,
                         help="Override auto-classification: fmcg|bank|it|generic")
     parser.add_argument("--task",    default="all",
-                        choices=["data", "narrative", "charts", "report", "all"])
+                        choices=["data", "narrative", "charts", "report",
+                                 "validate", "backtest", "all"])
+    parser.add_argument("--report-type", default="initiation",
+                        choices=["initiation", "earnings"],
+                        help="Report format: initiation (30-50p) or earnings (8-12p)")
     parser.add_argument("--force-refresh", action="store_true",
                         help="Bypass screener.in cache")
     parser.add_argument("--output", default=None,
@@ -564,11 +649,32 @@ def main():
         report_json = run_charts(report_json, charts_dir)
         save_report_json(report_json, report_dir)
 
+    if args.task in ("validate",):
+        if report_json is None:
+            report_json = load_report_json(json_path)
+        validation = run_validate(report_json)
+        if validation.has_errors:
+            log.error(f"Validation FAILED: {len(validation.errors)} error(s) — see above")
+            sys.exit(1)
+        else:
+            log.info("Validation passed ✓")
+
+    if args.task in ("backtest",):
+        run_backtest(ticker=ticker)
+
     if args.task in ("report", "all"):
         if report_json is None:
             report_json = load_report_json(json_path)
-        result = run_report(report_json, output_path)
-        log.info(f"[report] Saved → {result}")
+        report_type = getattr(args, "report_type", "initiation")
+        if report_type == "earnings":
+            earnings_path = os.path.join(
+                report_dir, f"{ticker}_Earnings_Update_{today}.docx"
+            )
+            result = run_earnings_report(report_json, earnings_path)
+            log.info(f"[earnings] Saved → {result}")
+        else:
+            result = run_report(report_json, output_path)
+            log.info(f"[report] Saved → {result}")
 
 
 if __name__ == "__main__":

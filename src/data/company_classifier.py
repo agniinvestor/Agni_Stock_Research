@@ -73,6 +73,16 @@ class CompanyClassifier:
         "pharmaceuticals": "pharma",
         "pharma": "pharma",
         "drugs": "pharma",
+        "steel": "metals",
+        "iron & steel": "metals",
+        "metals": "metals",
+        "metal": "metals",
+        "aluminium": "metals",
+        "zinc": "metals",
+        "copper": "metals",
+        "mining": "metals",
+        "minerals": "metals",
+        "coal": "metals",
     }
 
     # Tier 2: screener sector → default peer group
@@ -81,6 +91,7 @@ class CompanyClassifier:
         "it":     ["TCS", "INFY", "WIPRO", "HCLTECH", "TECHM"],
         "fmcg":   ["ITC", "HINDUNILVR", "NESTLEIND", "BRITANNIA", "DABUR"],
         "pharma": ["SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "AUROPHARMA"],
+        "metals": ["TATASTEEL", "JSWSTEEL", "HINDALCO", "VEDL", "NATIONALUM"],
     }
 
     # Tier 2: sector → preferred valuation method
@@ -89,6 +100,7 @@ class CompanyClassifier:
         "it":     "pe_ev_ebit_dcf",
         "fmcg":   "ev_ebitda_pe_dcf",
         "pharma": "pe_ev_ebitda",
+        "metals": "ev_ebitda_ev_tonne",
     }
 
     # Tier 2: sector → canonical sector label
@@ -97,6 +109,7 @@ class CompanyClassifier:
         "it":      "IT",
         "fmcg":    "FMCG",
         "pharma":  "PHARMA",
+        "metals":  "METALS",
         "generic": "GENERIC",
     }
 
@@ -106,6 +119,7 @@ class CompanyClassifier:
         "it":      "IT Services",
         "fmcg":    "Consumer Staples",
         "pharma":  "Pharmaceuticals",
+        "metals":  "Metals & Mining",
         "generic": "General",
     }
 
@@ -118,6 +132,8 @@ class CompanyClassifier:
     ]
     FMCG_KEYWORDS   = ["consumer", "foods", "beverages", "tobacco", "cigarettes", "personal care"]
     PHARMA_KEYWORDS = ["pharma", "pharmaceutical", "drug", "medicine", "biotech", "bio-tech"]
+    METALS_KEYWORDS = ["steel", "aluminium", "aluminum", "zinc", "copper", "iron", "mining",
+                       "minerals", "coal", "metal", "vedanta", "hindalco", "nationalum"]
 
     def __init__(self, universe_csv_path: str = None, db_path: str = None):
         """
@@ -289,6 +305,8 @@ class CompanyClassifier:
             model_type = "fmcg"
         elif any(kw in name_lower for kw in self.PHARMA_KEYWORDS):
             model_type = "pharma"
+        elif any(kw in name_lower for kw in self.METALS_KEYWORDS):
+            model_type = "metals"
 
         return self._build_classification(
             ticker=ticker,

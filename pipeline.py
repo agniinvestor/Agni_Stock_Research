@@ -412,6 +412,8 @@ def run_charts(report_json: dict, charts_dir: str) -> dict:
         chart_capex_vs_net_cash,
         chart_revenue_by_segment,
         chart_scenario_comparison,
+        chart_pharma_rnd_trend, chart_pharma_margin_bridge, chart_pharma_revenue_mix,
+        chart_metals_ebitda_per_tonne, chart_metals_leverage, chart_metals_realization_trend,
     )
 
     os.makedirs(charts_dir, exist_ok=True)
@@ -520,6 +522,45 @@ def run_charts(report_json: dict, charts_dir: str) -> dict:
             _save("chart_24", chart_shareholding_pie,
                   ChartData([], -1, holders, meta),
                   "chart_24_shareholding_pie.png")
+
+    # ── Pharma charts ──────────────────────────────────────────────────────────
+    if model_type == "pharma":
+        is_p = report_json["financials"]["income_statement"]
+        rnd  = is_p.get("rnd_spend", [])
+        rndp = is_p.get("rnd_spend_pct", [])
+        exm  = is_p.get("ebitda_ex_rnd_margin", [])
+        em   = rat_.get("ebitda_margin", [])
+        if rnd:
+            _save("chart_36", chart_pharma_rnd_trend,
+                  ChartData(fy_labels, actuals_end_idx, {"rnd_spend": rnd, "rnd_pct": rndp}, meta),
+                  "chart_36_pharma_rnd_trend.png")
+        if em and exm:
+            _save("chart_37", chart_pharma_margin_bridge,
+                  ChartData(fy_labels, actuals_end_idx,
+                            {"ebitda_margin": em, "ebitda_ex_rnd_margin": exm}, meta),
+                  "chart_37_pharma_margin_bridge.png")
+
+    # ── Metals charts ──────────────────────────────────────────────────────────
+    if model_type == "metals":
+        is_m = report_json["financials"]["income_statement"]
+        ebt  = is_m.get("ebitda_per_tonne", [])
+        vol  = is_m.get("steel_volume_mt", []) or is_m.get("aluminium_volume_mt", [])
+        lev  = is_m.get("net_debt_to_ebitda", [])
+        real = is_m.get("realization_per_tonne", [])
+        rm_p = is_m.get("raw_material_cost_pct", [])
+        if ebt:
+            _save("chart_39", chart_metals_ebitda_per_tonne,
+                  ChartData(fy_labels, actuals_end_idx, {"ebitda_per_tonne": ebt, "volume_mt": vol}, meta),
+                  "chart_39_metals_ebitda_per_tonne.png")
+        if lev:
+            _save("chart_40", chart_metals_leverage,
+                  ChartData(fy_labels, actuals_end_idx, {"net_debt_ebitda": lev}, meta),
+                  "chart_40_metals_leverage.png")
+        if real:
+            _save("chart_41", chart_metals_realization_trend,
+                  ChartData(fy_labels, actuals_end_idx,
+                            {"realization_per_tonne": real, "raw_material_cost_pct": rm_p}, meta),
+                  "chart_41_metals_realization.png")
 
     report_json["charts"] = charts
     log.info(f"[charts] {len(charts)} charts generated")

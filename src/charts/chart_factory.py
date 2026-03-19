@@ -1756,3 +1756,258 @@ def chart_segment_ebit_waterfall(data: ChartData, output_path: str) -> str:
     add_source_note(ax, _source(data))
     save_chart(fig, output_path)
     return output_path
+
+
+# ===========================================================================
+# CATEGORY 8: Pharma-specific  (charts 36–38)
+# ===========================================================================
+
+def chart_pharma_rnd_trend(data: ChartData, output_path: str) -> str:
+    """Dual-axis: R&D spend (INR Cr bar) + R&D as % of revenue (line).
+
+    data.values: {"rnd_spend": [...], "rnd_pct": [...], "net_revenue": [...]}
+    """
+    fig, ax1 = get_fig_ax(width=12, height=5)
+    company  = _company(data)
+    n        = len(data.fy_labels)
+    x        = _x_positions(n)
+    ei       = data.actuals_end_idx
+
+    rnd  = _safe_vals(data.values.get("rnd_spend", [0] * n))
+    pct  = _safe_vals(data.values.get("rnd_pct",   [0] * n))
+
+    colors = _bar_fill_colors(n, ei)
+    bars   = ax1.bar(x, rnd, color=colors, width=0.55, zorder=2, label="R&D Spend (₹ Cr)")
+    add_data_labels(ax1, bars, fmt="{:.0f}", fontsize=7)
+
+    ax2 = ax1.twinx()
+    ax2.plot(x, pct, color=GOLD_RGB, linewidth=1.8, marker="o",
+             markersize=5, label="R&D as % Revenue", zorder=3)
+    ax2.set_ylabel("R&D % Revenue", color=GOLD_HEX, fontsize=9)
+    ax2.tick_params(axis="y", labelcolor=GOLD_HEX, labelsize=8)
+    ax2.set_ylim(0, max(v for v in pct if not np.isnan(v)) * 1.4 if any(not np.isnan(v) for v in pct) else 20)
+
+    add_projection_separator(ax1, ei, n)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(data.fy_labels, rotation=30, ha="right", fontsize=8)
+    ax1.set_ylabel("R&D Spend (₹ Cr)")
+    format_crore_axis(ax1, "y")
+    ax1.set_title(f"{company} — R&D Investment Trend")
+
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=8, loc="upper left")
+    add_source_note(ax1, _source(data))
+    save_chart(fig, output_path)
+    return output_path
+
+
+def chart_pharma_margin_bridge(data: ChartData, output_path: str) -> str:
+    """Bar chart: reported EBITDA margin vs adjusted EBITDA margin (ex-R&D).
+
+    data.values: {"ebitda_margin": [...], "ebitda_ex_rnd_margin": [...]}
+    """
+    fig, ax = get_fig_ax(width=12, height=5)
+    company = _company(data)
+    n       = len(data.fy_labels)
+    x       = _x_positions(n)
+    ei      = data.actuals_end_idx
+
+    rep_m  = _safe_vals(data.values.get("ebitda_margin",        [0] * n))
+    adj_m  = _safe_vals(data.values.get("ebitda_ex_rnd_margin", [0] * n))
+
+    width  = 0.38
+    x_rep  = x - width / 2
+    x_adj  = x + width / 2
+
+    b1 = ax.bar(x_rep, rep_m, width=width, color=NAVY_RGB, label="Reported EBITDA Margin", zorder=2)
+    b2 = ax.bar(x_adj, adj_m, width=width, color=GREEN_RGB, label="Adj. EBITDA Margin (ex-R&D)", zorder=2)
+    add_data_labels(ax, b1, fmt="{:.1f}%", fontsize=7)
+    add_data_labels(ax, b2, fmt="{:.1f}%", fontsize=7)
+
+    add_projection_separator(ax, ei, n)
+    ax.set_xticks(x)
+    ax.set_xticklabels(data.fy_labels, rotation=30, ha="right", fontsize=8)
+    ax.set_ylabel("EBITDA Margin (%)")
+    ax.set_title(f"{company} — Reported vs Adjusted EBITDA Margin")
+    ax.legend(fontsize=8)
+    add_source_note(ax, _source(data))
+    save_chart(fig, output_path)
+    return output_path
+
+
+def chart_pharma_revenue_mix(data: ChartData, output_path: str) -> str:
+    """Stacked 100% bar: revenue mix by geography/segment (Domestic, US, RoW, API).
+
+    data.values: {segment_name: [pct_values_per_fy]}  — values in % (sum ~100)
+    """
+    fig, ax = get_fig_ax(width=12, height=5)
+    company = _company(data)
+    n       = len(data.fy_labels)
+    x       = _x_positions(n)
+    ei      = data.actuals_end_idx
+
+    segments = [k for k in data.values if k != "total"]
+    colors   = [NAVY_RGB, GREEN_RGB, GOLD_RGB, LGRAY_RGB, DGRAY_RGB]
+
+    bottoms = np.zeros(n)
+    for i, seg in enumerate(segments):
+        vals = _safe_vals(data.values.get(seg, [0] * n))
+        vals_arr = np.array([0 if np.isnan(v) else v for v in vals])
+        ax.bar(x, vals_arr, bottom=bottoms,
+               color=colors[i % len(colors)], width=0.55,
+               label=seg, zorder=2)
+        for j, (bot, val) in enumerate(zip(bottoms, vals_arr)):
+            if val > 5:
+                ax.text(x[j], bot + val / 2, f"{val:.0f}%",
+                        ha="center", va="center", fontsize=7,
+                        color="white", fontweight="bold")
+        bottoms += vals_arr
+
+    add_projection_separator(ax, ei, n)
+    ax.set_xticks(x)
+    ax.set_xticklabels(data.fy_labels, rotation=30, ha="right", fontsize=8)
+    ax.set_ylabel("Revenue Mix (%)")
+    ax.set_ylim(0, 110)
+    ax.set_title(f"{company} — Revenue Mix by Geography / Segment")
+    ax.legend(fontsize=8, loc="upper right")
+    add_source_note(ax, _source(data))
+    save_chart(fig, output_path)
+    return output_path
+
+
+# ===========================================================================
+# CATEGORY 9: Metals-specific  (charts 39–41)
+# ===========================================================================
+
+def chart_metals_ebitda_per_tonne(data: ChartData, output_path: str) -> str:
+    """Dual-axis: EBITDA/tonne (bar, ₹) + steel/aluminium volume (line, MT).
+
+    data.values: {"ebitda_per_tonne": [...], "volume_mt": [...]}
+    """
+    fig, ax1 = get_fig_ax(width=12, height=5)
+    company  = _company(data)
+    n        = len(data.fy_labels)
+    x        = _x_positions(n)
+    ei       = data.actuals_end_idx
+
+    ebt  = _safe_vals(data.values.get("ebitda_per_tonne", [0] * n))
+    vol  = _safe_vals(data.values.get("volume_mt",        [None] * n))
+
+    colors = _bar_fill_colors(n, ei)
+    bars   = ax1.bar(x, ebt, color=colors, width=0.55, zorder=2, label="EBITDA/tonne (₹)")
+    add_data_labels(ax1, bars, fmt="{:,.0f}", fontsize=7)
+
+    ax1.set_ylabel("EBITDA per Tonne (₹)")
+    ax1.set_title(f"{company} — EBITDA per Tonne")
+
+    if any(not np.isnan(v) for v in vol):
+        ax2 = ax1.twinx()
+        ax2.plot(x, vol, color=GOLD_RGB, linewidth=1.8, marker="s",
+                 markersize=5, label="Volume (MT)", zorder=3)
+        ax2.set_ylabel("Volume (Million Tonnes)", color=GOLD_HEX, fontsize=9)
+        ax2.tick_params(axis="y", labelcolor=GOLD_HEX, labelsize=8)
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=8, loc="upper left")
+    else:
+        ax1.legend(fontsize=8)
+
+    add_projection_separator(ax1, ei, n)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(data.fy_labels, rotation=30, ha="right", fontsize=8)
+    add_source_note(ax1, _source(data))
+    save_chart(fig, output_path)
+    return output_path
+
+
+def chart_metals_leverage(data: ChartData, output_path: str) -> str:
+    """Bar: Net Debt/EBITDA ratio with danger zone shading above 3x.
+
+    data.values: {"net_debt_ebitda": [...], "net_debt": [...]}
+    """
+    fig, ax = get_fig_ax(width=12, height=5)
+    company = _company(data)
+    n       = len(data.fy_labels)
+    x       = _x_positions(n)
+    ei      = data.actuals_end_idx
+
+    ratio = _safe_vals(data.values.get("net_debt_ebitda", [0] * n))
+
+    def _color(v):
+        if np.isnan(v) or v is None:
+            return LGRAY_RGB
+        if v < 2.0:
+            return GREEN_RGB
+        if v < 3.5:
+            return GOLD_RGB
+        return (0.8, 0.1, 0.1)
+
+    bar_colors = [_color(v) for v in ratio]
+    bars = ax.bar(x, [0 if np.isnan(v) else v for v in ratio],
+                  color=bar_colors, width=0.55, zorder=2)
+    add_data_labels(ax, bars, fmt="{:.1f}x", fontsize=8)
+
+    # Danger zone line at 3.5x
+    ax.axhline(3.5, color=(0.8, 0.1, 0.1), linewidth=1.2,
+               linestyle="--", label="High Risk (3.5x)", zorder=3)
+    ax.axhline(2.0, color=GOLD_HEX, linewidth=1.0,
+               linestyle=":", label="Caution (2.0x)", zorder=3)
+
+    add_projection_separator(ax, ei, n)
+    ax.set_xticks(x)
+    ax.set_xticklabels(data.fy_labels, rotation=30, ha="right", fontsize=8)
+    ax.set_ylabel("Net Debt / EBITDA (x)")
+    ax.set_title(f"{company} — Leverage: Net Debt / EBITDA")
+    ax.legend(fontsize=8)
+    add_source_note(ax, _source(data))
+    save_chart(fig, output_path)
+    return output_path
+
+
+def chart_metals_realization_trend(data: ChartData, output_path: str) -> str:
+    """Line: realization per tonne (₹/t) trend — proxy for commodity price exposure.
+
+    data.values: {"realization_per_tonne": [...], "raw_material_cost_pct": [...]}
+    """
+    fig, ax1 = get_fig_ax(width=12, height=5)
+    company  = _company(data)
+    n        = len(data.fy_labels)
+    x        = _x_positions(n)
+    ei       = data.actuals_end_idx
+
+    real  = _safe_vals(data.values.get("realization_per_tonne", [0] * n))
+    rm_pct = _safe_vals(data.values.get("raw_material_cost_pct", [None] * n))
+
+    ax1.plot(x, real, color=NAVY_RGB, linewidth=2, marker="o",
+             markersize=5, label="Realization/Tonne (₹)", zorder=3)
+    ax1.fill_between(x, real, alpha=0.08, color=NAVY_RGB)
+
+    for i, v in enumerate(real):
+        if not np.isnan(v):
+            ax1.annotate(f"₹{v:,.0f}", (x[i], v),
+                         textcoords="offset points", xytext=(0, 7),
+                         ha="center", fontsize=7)
+
+    ax1.set_ylabel("Realization per Tonne (₹)")
+    ax1.set_title(f"{company} — Realization & Raw Material Cost Trend")
+
+    if any(not np.isnan(v) for v in rm_pct):
+        ax2 = ax1.twinx()
+        ax2.bar(x, [0 if np.isnan(v) else v for v in rm_pct],
+                color=GOLD_RGB, alpha=0.35, width=0.55,
+                label="Raw Material Cost %", zorder=2)
+        ax2.set_ylabel("Raw Material Cost (% of Revenue)", color=GOLD_HEX, fontsize=9)
+        ax2.tick_params(axis="y", labelcolor=GOLD_HEX, labelsize=8)
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=8, loc="upper left")
+    else:
+        ax1.legend(fontsize=8)
+
+    add_projection_separator(ax1, ei, n)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(data.fy_labels, rotation=30, ha="right", fontsize=8)
+    add_source_note(ax1, _source(data))
+    save_chart(fig, output_path)
+    return output_path

@@ -57,9 +57,11 @@ Build a pipeline that generates full-fledged institutional-quality equity resear
 
 ---
 
-## 🚧 Phase 3 — Quality & Coverage Expansion (PLANNED)
+## ✅ Phase 3 — Quality & Coverage Expansion (COMPLETE)
 
-### Sprint 1: Live Validation (prerequisite: screener.in credentials)
+**Status**: Committed to `main` at `c5df2ce`. 11 files, 4,654 lines added. Sector chart additions committed separately.
+
+### Sprint 1: Live Validation ⏳ (prerequisite: screener.in credentials)
 - [ ] Run `python pipeline.py --ticker ITC --task all` end-to-end
 - [ ] Validate ITC financials match known values (FY25A Net Rev = ₹43,011 Cr, PAT = ₹22,592 Cr)
 - [ ] Validate HDFCBANK classification → bank model → bank metrics
@@ -67,38 +69,70 @@ Build a pipeline that generates full-fledged institutional-quality equity resear
 - [ ] Fix any parsing issues in screener_client for real HTML
 
 ### Sprint 2: Data Quality Validator
-- [ ] `src/validation/model_validator.py` — ratio sanity checks:
+- [x] `src/validation/model_validator.py` — ratio sanity checks:
   - Balance sheet balance: Total Assets = Total Liabilities + Equity (within 1%)
   - Cash flow tie-out: Opening cash + Net cash change = Closing cash
   - Revenue continuity: No >50% YoY swing without annotation
   - Margin reasonableness: EBITDA margin 0–80%, PAT margin 0–50%
-- [ ] `src/validation/screener_validator.py` — cross-check key metrics vs yfinance info
+- [x] `src/validation/screener_validator.py` — cross-check key metrics vs yfinance info
 
 ### Sprint 3: Pharma Sector Model
-- [ ] `src/models/pharma_model.py` — R&D capitalization, ANDA pipeline, US FDA risk, US generics pricing
+- [x] `src/models/pharma_model.py` — R&D capitalization, ANDA pipeline, US FDA risk, US generics pricing
   - Key metrics: R&D spend %, Domestic branded vs US generics mix, EBITDA margin ex-R&D
   - Peers: SUNPHARMA, DRREDDY, CIPLA, DIVISLAB, LUPIN, AUROPHARMA
   - Valuation: P/E (primary), EV/EBITDA (secondary), Sum-of-the-parts
-- [ ] Add pharma tickers to `stock_universe.csv`
+- [x] Add pharma tickers to `stock_universe.csv`
 
 ### Sprint 4: Metals & Commodities Model
-- [ ] `src/models/metals_model.py` — volume × price model, LME/coking coal sensitivity
+- [x] `src/models/metals_model.py` — volume × price model, LME/coking coal sensitivity
   - Key metrics: EBITDA per tonne, Volume growth, Realization per tonne
   - Peers: TATASTEEL, JSWSTEEL, HINDALCO, VEDL, NATIONALUM
   - Valuation: EV/EBITDA, EV/tonne
 
 ### Sprint 5: Earnings Update Reports
-- [ ] `src/report/earnings_builder.py` — 8–12 page format for post-earnings updates
+- [x] `src/report/earnings_builder.py` — 8–12 page format for post-earnings updates
   - Beat/miss analysis vs estimates
   - Updated model + revised price target
   - Chart delta vs prior quarter
-- [ ] `pipeline.py --report-type earnings` option
+- [x] `pipeline.py --report-type earnings` option
 
 ### Sprint 6: Backtesting Framework
-- [ ] `src/backtest/price_target_tracker.py` — store price targets with issue date
+- [x] `src/backtest/price_target_tracker.py` — store price targets with issue date
   - Track actual price 3/6/12 months later
   - Compute hit rate: % of BUYs that outperformed Nifty in 12 months
   - Track MAPE of earnings estimates
+
+## 🚧 Phase 4 — Intelligence & Distribution (PLANNED)
+
+### Sprint 1: Concall Transcript Parser
+- [ ] `src/data/concall_parser.py` — download BSE exchange filing for earnings concall
+  - Parse PDF / HTML transcript; extract guidance, key numbers, management quotes
+  - Claude Haiku summarization into structured JSON (guidance, tone, key risks)
+  - Cache in SQLite with 90-day TTL
+
+### Sprint 2: Automated Estimate Revisions
+- [ ] `src/models/estimate_engine.py` — rules-based estimate revision post-concall
+  - Parse management revenue guidance → update projection growth rates
+  - Detect margin guidance changes → adjust projection margins
+  - Auto-update `report_json["projections"]` without analyst intervention
+
+### Sprint 3: Sector Rotation Dashboard
+- [ ] `src/analytics/sector_dashboard.py` — aggregate metrics across all 39 tickers
+  - Median ROCE, revenue growth, P/E by sector
+  - Flag: which sector is cheapest/most momentum right now
+  - Output: XLSX or HTML dashboard (no DOCX)
+
+### Sprint 4: Report Auto-Delivery via Email
+- [ ] `src/delivery/email_sender.py` — send DOCX report as email attachment
+  - SMTP/SendGrid integration; HTML email body with key metrics table
+  - Per-recipient ticker watchlist; trigger on new report generation
+
+### Sprint 5: Web Scraper Hardening
+- [ ] Add retry with jitter for screener.in rate limits
+- [ ] BSE direct filing fallback if screener.in is down
+- [ ] Proxy rotation support for institutional use
+
+---
 
 ---
 
@@ -111,9 +145,9 @@ ScreenerClient.fetch_company(ticker)    [SQLite cached 7 days]
        ↓
 DataNormalizer.normalize()              [Ind AS, excise, segment fixes]
        ↓
-CompanyClassifier.classify()            [auto-detect: FMCG/BANK/IT]
+CompanyClassifier.classify()            [auto-detect: FMCG/BANK/IT/PHARMA/METALS]
        ↓
-FMCGModel / BankModel / ITModel
+FMCGModel / BankModel / ITModel / PharmaModel / MetalsModel
   .compute_xxx_metrics()  → XxxMetrics
   .prepare_valuation_inputs() → XxxValuationInputs
        ↓
